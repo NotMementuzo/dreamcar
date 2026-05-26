@@ -33,7 +33,6 @@
       <span class="line2">Tus reglas.</span>
       <span class="line3">SIN EXCUSAS.</span>
     </h1>
-    <p class="hero-tagline">Packs completos de tuning para que tu <b>Cupra, BMW, Golf</b> —lo que sea— deje de ser uno más. Seleccionados, compatibles, listos para montar.</p>
     <div class="hero-ctas">
       <a href="#packs" class="btn-dark">Ver los packs</a>
       <a href="#micoche" class="btn-out">Buscar para mi coche</a>
@@ -245,7 +244,6 @@
 
 <script src="script.js"></script>
 
-<!-- COCHE 3D -->
 <script type="importmap">
 {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
 </script>
@@ -268,7 +266,6 @@ const scene  = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
 camera.position.set(0, 0.6, 4.2);
 
-// Luces
 scene.add(new THREE.AmbientLight(0xfff5e0, 1.5));
 const key = new THREE.DirectionalLight(0xffffff, 4);
 key.position.set(4, 5, 3);
@@ -290,10 +287,8 @@ function resize() {
 resize();
 window.addEventListener('resize', resize);
 
-// Draco
 const draco = new DRACOLoader();
 draco.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/libs/draco/');
-
 const loader = new GLTFLoader();
 loader.setDRACOLoader(draco);
 
@@ -314,21 +309,18 @@ loader.load(
     if (loading) loading.style.display = 'none';
   },
   (xhr) => {
-    if (loading) loading.textContent = 'Cargando... ' + Math.round(xhr.loaded / xhr.total * 100) + '%';
+    if (loading && xhr.total) loading.textContent = 'Cargando... ' + Math.round(xhr.loaded / xhr.total * 100) + '%';
   },
   (err) => {
     console.error(err);
-    if (loading) loading.textContent = 'Error al cargar el modelo';
+    if (loading) loading.textContent = 'Error al cargar';
   }
 );
 
 let angle = 0.3;
 function animate() {
   requestAnimationFrame(animate);
-  if (car) {
-    angle += 0.004;
-    car.rotation.y = angle;
-  }
+  if (car) { angle += 0.004; car.rotation.y = angle; }
   renderer.render(scene, camera);
 }
 animate();
