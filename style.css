@@ -353,3 +353,11 @@ footer{background:var(--charcoal);padding:4rem 4% 2rem}
   .cats-grid{grid-template-columns:repeat(2,1fr)}
   .sel-row{grid-template-columns:1fr}
 }
+/* HERO 3D */
+.hero-r{ background:#1a1814; position:relative; }
+#car3d{ width:100%; height:100%; display:block; }
+#car-loading{
+  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+  font-family:'DM Sans',sans-serif; font-size:.75rem; letter-spacing:.15em;
+  text-transform:uppercase; color:rgba(201,168,76,.5);
+}
