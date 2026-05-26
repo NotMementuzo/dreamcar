@@ -45,13 +45,9 @@
     </div>
   </div>
   <div class="hero-r">
-    <div class="hero-r-carbon"></div>
-    <div class="hero-r-glow"></div>
-    <div class="hero-r-word">
-      <span class="dc-dream">DREAM</span>
-      <span class="dc-car">Car.</span>
-    </div>
     <div class="hero-r-bar"></div>
+    <div id="car-loading">Cargando modelo...</div>
+    <canvas id="car3d"></canvas>
   </div>
 </div>
 
@@ -73,7 +69,6 @@
     <a href="#prods" class="btn-out">Ver todos los productos</a>
   </div>
   <div class="packs-grid">
-
     <div class="pk">
       <div class="pk-num">01</div>
       <span class="pk-tag bs">Más vendido</span>
@@ -92,7 +87,6 @@
         <button class="pk-add">Añadir al carrito</button>
       </div>
     </div>
-
     <div class="pk">
       <div class="pk-num">02</div>
       <span class="pk-tag nw">Nuevo</span>
@@ -110,7 +104,6 @@
         <button class="pk-add">Añadir al carrito</button>
       </div>
     </div>
-
     <div class="pk">
       <div class="pk-num">03</div>
       <span class="pk-tag of">Oferta</span>
@@ -128,7 +121,6 @@
         <button class="pk-add">Añadir al carrito</button>
       </div>
     </div>
-
     <div class="pk">
       <div class="pk-num">04</div>
       <div class="pk-name">STANCE</div>
@@ -145,7 +137,6 @@
         <button class="pk-add">Añadir al carrito</button>
       </div>
     </div>
-
   </div>
 </section>
 
@@ -159,12 +150,6 @@
     <a href="#prods" class="btn-out">Ver catálogo completo</a>
   </div>
   <div class="cats-grid">
-    <!--
-      CÓMO AÑADIR IMÁGENES:
-      Sube tu PNG a la carpeta /img/ del repositorio.
-      Luego en el div.cat-media añade: style="background:url('img/aerodinamica.png') center/cover no-repeat"
-      y elimina el <span class="cat-ph"> de dentro.
-    -->
     <div class="cat"><div class="cat-media"><span class="cat-ph">Aero</span></div><div class="cat-grad"></div><span class="cat-arrow">Ver →</span><div class="cat-body"><div class="cat-name">Aerodinámica</div><div class="cat-count">312 productos</div></div></div>
     <div class="cat"><div class="cat-media"><span class="cat-ph">Luz</span></div><div class="cat-grad"></div><span class="cat-arrow">Ver →</span><div class="cat-body"><div class="cat-name">Iluminación</div><div class="cat-count">218 productos</div></div></div>
     <div class="cat"><div class="cat-media"><span class="cat-ph">Int.</span></div><div class="cat-grad"></div><span class="cat-arrow">Ver →</span><div class="cat-body"><div class="cat-name">Interior</div><div class="cat-count">445 productos</div></div></div>
@@ -259,5 +244,95 @@
 </footer>
 
 <script src="script.js"></script>
+
+<!-- COCHE 3D -->
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+
+const canvas    = document.getElementById('car3d');
+const loading   = document.getElementById('car-loading');
+const container = canvas.parentElement;
+
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.4;
+
+const scene  = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
+camera.position.set(0, 0.6, 4.2);
+
+// Luces
+scene.add(new THREE.AmbientLight(0xfff5e0, 1.5));
+const key = new THREE.DirectionalLight(0xffffff, 4);
+key.position.set(4, 5, 3);
+scene.add(key);
+const fill = new THREE.DirectionalLight(0xc9a84c, 1.5);
+fill.position.set(-4, 2, -2);
+scene.add(fill);
+const rim = new THREE.DirectionalLight(0xffeedd, 1);
+rim.position.set(0, -1, -5);
+scene.add(rim);
+
+function resize() {
+  const w = container.clientWidth;
+  const h = container.clientHeight;
+  renderer.setSize(w, h);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+resize();
+window.addEventListener('resize', resize);
+
+// Draco
+const draco = new DRACOLoader();
+draco.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/libs/draco/');
+
+const loader = new GLTFLoader();
+loader.setDRACOLoader(draco);
+
+let car = null;
+
+loader.load(
+  'audi_rs7_keyvany_free-v1.glb',
+  (gltf) => {
+    car = gltf.scene;
+    const box    = new THREE.Box3().setFromObject(car);
+    const center = box.getCenter(new THREE.Vector3());
+    const size   = box.getSize(new THREE.Vector3());
+    car.position.sub(center);
+    const scale = 2.4 / Math.max(size.x, size.y, size.z);
+    car.scale.setScalar(scale);
+    car.position.y -= 0.15;
+    scene.add(car);
+    if (loading) loading.style.display = 'none';
+  },
+  (xhr) => {
+    if (loading) loading.textContent = 'Cargando... ' + Math.round(xhr.loaded / xhr.total * 100) + '%';
+  },
+  (err) => {
+    console.error(err);
+    if (loading) loading.textContent = 'Error al cargar el modelo';
+  }
+);
+
+let angle = 0.3;
+function animate() {
+  requestAnimationFrame(animate);
+  if (car) {
+    angle += 0.004;
+    car.rotation.y = angle;
+  }
+  renderer.render(scene, camera);
+}
+animate();
+</script>
+
 </body>
 </html>
